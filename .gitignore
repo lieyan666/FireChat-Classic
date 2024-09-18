@@ -1,3 +1,7 @@
+# Config
+serverConfig.json
+clientConfig.json
+
 # Logs
 logs
 *.log
