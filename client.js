@@ -2,19 +2,18 @@
  * @Author: Lieyan
  * @Date: 2024-09-18 19:10:49
  * @LastEditors: Lieyan
- * @LastEditTime: 2024-09-18 19:30:01
+ * @LastEditTime: 2024-09-18 19:58:31
  * @FilePath: /FireChat-Classic/client.js
  * @Description: for firechat-classic client
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
  * @Copyright: Copyright (c) 2024 by lieyanDevTeam, All Rights Reserved. 
  */
 const net = require('net');
+const fs = require('fs');
 const readline = require('readline');
 
 // server config
-const serverMap = {
-    'server1': { ip: '127.0.0.1', port: 8080 }
-};
+const serverMap = JSON.parse(fs.readFileSync('clientConfig.json', 'utf8'));
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -29,9 +28,8 @@ rl.question('Enter ServerID: ', (serverId) => {
         rl.close();
         return;
     }
-
     const client = net.createConnection(serverInfo.port, serverInfo.ip, () => {
-        console.log('Connected!');
+        console.log('[Client] Connected!');
     });
 
     client.on('data', (data) => {
@@ -48,11 +46,10 @@ rl.question('Enter ServerID: ', (serverId) => {
         rl.close();
     });
 
-    rl.question('Pswd: ', (password) => {
-        client.write(password); // 发送密码
-
+    rl.question('->', (password) => {
+        client.write(password);
         rl.on('line', (input) => {
-            client.write(input); // 发送消息
+            client.write(input);
         });
     });
 });

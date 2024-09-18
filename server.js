@@ -2,35 +2,42 @@
  * @Author: Lieyan
  * @Date: 2024-09-18 18:59:40
  * @LastEditors: Lieyan
- * @LastEditTime: 2024-09-18 19:18:35
+ * @LastEditTime: 2024-09-18 20:00:05
  * @FilePath: /FireChat-Classic/server.js
  * @Description: for firechat-classic server
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
  * @Copyright: Copyright (c) 2024 by lieyanDevTeam, All Rights Reserved. 
  */
 const net = require('net');
+const fs = require('fs');
 
 let clients = [];
-const serverPassword = 'pswd'; // server password
+const config = JSON.parse(fs.readFileSync('serverConfig.json', 'utf8'));
+const serverPassword = config.password;
+
+function generateRandomUsername() {
+    return 'User_' + Math.random().toString(36).substr(2, 8);
+}
 
 const server = net.createServer((socket) => {
-    socket.write('Password: ');
+    socket.write('[Server] Password: ');
     socket.on('data', (data) => {
         data = data.toString().trim();
         // pswd verify
         if (!socket.authenticated) {
             if (data === serverPassword) {
                 socket.authenticated = true;
-                socket.username = `User_${Math.floor(Math.random() * 10000)}`; // random username
+                // socket.username = `User_${Math.floor(Math.random() * 10000)}`; // random username
+                socket.username = generateRandomUsername();
                 clients.push(socket);
-                socket.write(`Connected! Randomized Username: ${socket.username}\n`);
+                socket.write(`[Server] Connected! Randomized Username: ${socket.username}\n`);
                 broadcast(`${socket.username} Connected`, socket);
             } else {
-                socket.write('Premission Denied (Password Error) !\n');
+                socket.write('[Server] Premission Denied (Password Error) !\n');
                 socket.end();
             }
         } else {
-            // 广播消息
+            // broadcast msg.
             broadcast(`${socket.username}: ${data}`, socket);
         }
     });
@@ -53,7 +60,7 @@ const server = net.createServer((socket) => {
     }
 });
 
-// 监听端口
-server.listen(8080, () => {
-    console.log('Server Started');
+// start server
+server.listen(config.port, () => {
+    console.log(`Server Started, PORT=${config.port}`);
 });
